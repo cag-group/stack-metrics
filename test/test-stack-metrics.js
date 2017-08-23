@@ -89,6 +89,54 @@ describe('StackMetrics', () => {
     return this.metrics.sendValues(START_TIMESTAMP + SEND_INTERVAL)
   })
 
+  it('createTimeSeries, value types, many samples', async () => {
+    const createMetricDescriptorStub = this.createMetricDescriptorStub(this.metrics.client)
+    this.stubs.push(createMetricDescriptorStub)
+
+    let test
+
+    const createTimeSeriesStub = sinon.stub(this.metrics.client, 'createTimeSeries')
+    this.stubs.push(createTimeSeriesStub)
+    createTimeSeriesStub.callsFake(request => {
+      // console.log('Called mock createTimeSeries')
+      if (test === 1) {
+        request.timeSeries.length.should.be.exactly(2)
+
+        const timeSeries1 = request.timeSeries[0]
+        timeSeries1.metric.type.should.be.exactly('custom.googleapis.com/testapp/testValue1')
+        timeSeries1.points.length.should.be.exactly(1)
+        timeSeries1.points[0].interval.endTime.seconds.should.be.exactly((START_TIMESTAMP + SEND_INTERVAL) / 1000)
+        timeSeries1.points[0].value.int64Value.should.be.exactly(6)
+
+        const timeSeries2 = request.timeSeries[1]
+        timeSeries2.metric.type.should.be.exactly('custom.googleapis.com/testapp/testValue2')
+        timeSeries2.points.length.should.be.exactly(1)
+        timeSeries2.points[0].interval.endTime.seconds.should.be.exactly((START_TIMESTAMP + SEND_INTERVAL) / 1000)
+        timeSeries2.points[0].value.int64Value.should.be.exactly(12)
+      } else if (test === 2) {
+        request.timeSeries.length.should.be.exactly(1)
+
+        const timeSeries1 = request.timeSeries[0]
+        timeSeries1.metric.type.should.be.exactly('custom.googleapis.com/testapp/testValue1')
+        timeSeries1.points.length.should.be.exactly(1)
+        timeSeries1.points[0].interval.endTime.seconds.should.be.exactly((START_TIMESTAMP + SEND_INTERVAL * 2) / 1000)
+        timeSeries1.points[0].value.int64Value.should.be.exactly(12)
+      }
+    })
+
+    const testValue1Metric = this.metrics.createMetric('testValue1', 'Test value 1', StackMetrics.TYPE_INT64)
+    const testValue2Metric = this.metrics.createMetric('testValue2', 'Test value 2', StackMetrics.TYPE_INT64)
+
+    test = 1
+    testValue1Metric.writeCount(6)
+    testValue2Metric.writeCount(12)
+    await this.metrics.sendValues(START_TIMESTAMP + SEND_INTERVAL)
+
+    test = 2
+    testValue1Metric.writeCount(6)
+    return this.metrics.sendValues(START_TIMESTAMP + SEND_INTERVAL * 2)
+  })
+
   it('createTimeSeries, rate types', async () => {
     const createMetricDescriptorStub = this.createMetricDescriptorStub(this.metrics.client)
     this.stubs.push(createMetricDescriptorStub)
@@ -100,11 +148,9 @@ describe('StackMetrics', () => {
     createTimeSeriesStub.callsFake(request => {
       // console.log('Called mock createTimeSeries, request:', JSON.stringify(request))
       request.timeSeries.length.should.be.exactly(3)
-
       const timeSeries1 = request.timeSeries[0]
       const timeSeries2 = request.timeSeries[1]
       const timeSeries3 = request.timeSeries[2]
-
       timeSeries1.points.length.should.be.exactly(1)
       timeSeries2.points.length.should.be.exactly(1)
       timeSeries3.points.length.should.be.exactly(1)
@@ -113,9 +159,15 @@ describe('StackMetrics', () => {
         timeSeries1.metric.type.should.be.exactly('custom.googleapis.com/testapp/testRate1')
         timeSeries2.metric.type.should.be.exactly('custom.googleapis.com/testapp/testRate2')
         timeSeries3.metric.type.should.be.exactly('custom.googleapis.com/testapp/testRate3')
+
         timeSeries1.points[0].value.doubleValue.should.be.exactly(3) // (1+2+3) / 2 seconds
+        timeSeries1.points[0].interval.endTime.seconds.should.be.exactly(12)
+
         timeSeries2.points[0].value.doubleValue.should.be.exactly(3) // (1+2+3)*60 / 2*60 seconds
+        timeSeries2.points[0].interval.endTime.seconds.should.be.exactly(12)
+
         timeSeries3.points[0].value.doubleValue.should.be.exactly(3) // (1+2+3)*3600 / 2*3600 seconds
+        timeSeries3.points[0].interval.endTime.seconds.should.be.exactly(12)
       } else if (test === 2) {
         timeSeries1.points[0].value.doubleValue.should.be.exactly(0) // No writes since last send
       } else if (test === 3) {
