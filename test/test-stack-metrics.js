@@ -5,10 +5,10 @@ const should = require('should')
 const START_TIMESTAMP = 10000
 const SEND_INTERVAL = 2000
 
-describe('StackMetrics', () => {
+describe('StackMetrics', async () => {
   this.createMetricDescriptorStub = (client) => {
     return sinon.stub(client, 'createMetricDescriptor').callsFake(request => {
-      return Promise.resolve([request.metricDescriptor])
+      return [request.metricDescriptor]
     })
   }
 
@@ -49,7 +49,7 @@ describe('StackMetrics', () => {
       request.metricDescriptor.labels[0].valueType.should.be.exactly('STRING')
       request.metricDescriptor.labels[1].key.should.be.exactly('envName')
       request.metricDescriptor.labels[1].valueType.should.be.exactly('STRING')
-      return Promise.resolve([request.metricDescriptor])
+      return [request.metricDescriptor]
     })
 
     const createTimeSeriesStub = sinon.stub(metrics.client, 'createTimeSeries')
@@ -72,7 +72,7 @@ describe('StackMetrics', () => {
     createTimeSeriesStub.called.should.be.exactly(true)
   })
 
-  it('createTimeSeries, value type', () => {
+  it('createTimeSeries, value type', async () => {
     const createMetricDescriptorStub = this.createMetricDescriptorStub(metrics.client)
     stubs.push(createMetricDescriptorStub)
 
@@ -184,7 +184,6 @@ describe('StackMetrics', () => {
       } else if (test === 3) {
         timeSeries1.points[0].value.doubleValue.should.be.exactly(5) // (10) / 2 seconds
       }
-      return Promise.resolve({})
     })
 
     const testRate1Metric = metrics.createMetric('testRate1', 'Test value, a rate/sec', StackMetrics.TYPE_RATE_PER_SECOND)
@@ -223,7 +222,7 @@ describe('StackMetrics', () => {
 
     const createTimeSeriesStub = sinon.stub(metrics.client, 'createTimeSeries')
     stubs.push(createTimeSeriesStub)
-    createTimeSeriesStub.callsFake(request => {
+    createTimeSeriesStub.callsFake(async request => {
       // console.log('Called mock createTimeSeries, request:', JSON.stringify(request))
       // Only the rate metric should be sent, not the value metric
       request.timeSeries.length.should.be.exactly(1)
@@ -236,7 +235,6 @@ describe('StackMetrics', () => {
       } else if (test === 2) {
         timeSeries1.points[0].interval.endTime.seconds.should.be.exactly(14)
       }
-      return Promise.resolve({})
     })
 
     metrics.createMetric('testValue1', 'Test value', StackMetrics.TYPE_INT64)
