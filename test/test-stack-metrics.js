@@ -39,7 +39,7 @@ describe('StackMetrics', () => {
       // console.log('Called mock createMetricDescriptor, request:', JSON.stringify(request))
       request.name.should.be.exactly('/fdn/testproject')
       request.metricDescriptor.description.should.be.exactly('Test value')
-      request.metricDescriptor.displayName.should.be.exactly('testValue1')
+      request.metricDescriptor.displayName.should.be.exactly('testapp.testValue1')
       request.metricDescriptor.type.should.be.exactly('custom.googleapis.com/testapp/testValue1')
       request.metricDescriptor.metricKind.should.be.exactly('GAUGE')
       request.metricDescriptor.valueType.should.be.exactly('INT64')
