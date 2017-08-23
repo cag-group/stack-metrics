@@ -8,7 +8,6 @@ const test = async () => {
   setInterval(() => {
       myValueMetric.writeCount(1)
       myRateMetric.writeRate(1)
-      myValue++
     },
     1000)
 }
