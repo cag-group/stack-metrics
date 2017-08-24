@@ -2,7 +2,7 @@
   "name": "stack-metrics",
   "description": "Stackdriver Monitoring Custom Metrics",
   "main": "lib/stack-metrics.js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "scripts": {
     "test": "./node_modules/.bin/mocha"
   },
@@ -18,6 +18,6 @@
   },
   "dependencies": {
     "@google-cloud/monitoring": "^0.2.3",
-    "logger": "git+https://github.com/cag-group/logger.git"
+    "logger": "git+https://github.com/cag-group/logger.git#0.0.2"
   }
 }
