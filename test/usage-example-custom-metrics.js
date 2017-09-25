@@ -1,9 +1,9 @@
 const StackMetrics = require('../lib/stack-metrics')
 
 const test = async () => {
-  const metrics = new StackMetrics(undefined, 'google-project-id', 'testapp', 'dev', 'testapp', 5000)
+  const metrics = new StackMetrics('../secrets/service-account-key/service-account-key.json', 'eqt-integration-k8s', 'testapp', 5000)
   const myValueMetric = metrics.createMetric('myValue', 'My test value', StackMetrics.TYPE_INT64)
-  const myRateMetric = metrics.createMetric('myRate', 'My test value, a rate/min', StackMetrics.TYPE_RATE_PER_MINUTE)
+  const myRateMetric = metrics.createMetric('myRate', 'My test rate value', StackMetrics.TYPE_RATE)
 
   setInterval(() => {
       myValueMetric.writeCount(1)
