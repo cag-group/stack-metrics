@@ -2,7 +2,7 @@
   "name": "stack-metrics",
   "description": "Stackdriver Monitoring Custom Metrics",
   "main": "lib/stack-metrics.js",
-  "version": "1.2.0",
+  "version": "1.4.0",
   "scripts": {
     "test": "./node_modules/.bin/mocha"
   },
